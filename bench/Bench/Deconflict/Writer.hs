@@ -11,6 +11,7 @@
 {-# LANGUAGE TemplateHaskell     #-}
 {-# LANGUAGE TupleSections       #-}
 {-# LANGUAGE TypeApplications    #-}
+{-# LANGUAGE StrictData          #-}
 
 module Bench.Deconflict.Writer
 where
@@ -18,7 +19,7 @@ where
 import Data.Avro.Deriving
 import Text.RawString.QQ
 
-import           Data.Avro.Schema     (Field, Schema)
+import           Data.Avro.Schema     (Field, Schema, TypeName)
 import           Data.Binary.Get
 import           Data.ByteString.Lazy (ByteString)
 import           Data.Foldable
@@ -31,6 +32,9 @@ import           GHC.Int              (Int32, Int64)
 
 import qualified Data.Avro.Decode.Get as Get
 import qualified Data.Avro.Schema     as S
+
+import           Data.HashMap.Strict    (HashMap)
+import qualified Data.HashMap.Strict    as HashMap
 
 import Control.Monad.ST (ST)
 import Data.Dynamic
@@ -104,27 +108,40 @@ writeByPositions mv writes = foldl (>>) (return ()) (fmap (go mv) writes)
   where go :: MV.MVector s VValue ->  (Int, VValue) -> ST s ()
         go mv (n, v) = MV.write mv n v
 
-getRecord :: [Field] -> Get (Vector VValue)
-getRecord fs = do
-  moos <- forM (zip [0 ..] fs) $ \(i, f) -> fmap ((:[]) . (i, )) (getField f)
+getValue :: Schema -> Get VValue
+getValue sch = 
+  let env = S.extractBindings sch
+  in getField env sch
+
+
+getRecord :: HashMap TypeName Schema -> [Field] -> Get (Vector VValue)
+getRecord env fs = do
+  moos <- forM fs $ \f ->
+    case S.fldStatus f of
+      S.Ignored   -> getField env (S.fldType f) >> pure []
+      S.AsIs i    -> fmap ((:[]) . (i, )) (getField env (S.fldType f))
+      S.Defaulted -> undefined
 
   return $ V.create $ do
     vals <- MV.unsafeNew (length fs)
     writeByPositions vals (mconcat moos)
     return vals
 
-getField :: Field -> Get VValue
-getField (S.Field _ _ _ _ _ sch _) = case sch of
+getField :: HashMap TypeName Schema -> Schema -> Get VValue
+getField env sch = case sch of
   S.Boolean               -> fmap Boolean Get.getAvro
   S.Int                   -> fmap Int     Get.getAvro
   S.String                -> fmap String  Get.getAvro
-  S.Record _ _ _ _ fields -> fmap Record  (getRecord fields)
-  S.NamedType "Inner"     -> fmap Record  (getRecord (S.fields schema'Inner))
+  S.Record _ _ _ _ fields -> fmap Record  (getRecord env fields)
+  S.NamedType tn          -> 
+    case HashMap.lookup tn env of
+      Nothing -> fail $ "Unable to resolve type name " <> show tn
+      Just r  -> getField env r
 
 ggOuter :: ByteString -> Either String Outer
-ggOuter bs = case schema'Outer of
-  S.Record _ _ _ _ fields -> case runGetOrFail (getRecord fields) bs of
-    Right (_, _, v) -> Right (getOuter v)
+ggOuter bs = case runGetOrFail (getValue schema'Outer) bs of
+    Right (_, _, Record v) -> Right (getOuter v)
+    Right (_, _, s) -> Left "Illegal type"
     Left (_, _, e)  -> Left e
 
 getOuterR :: ByteString -> R (Vector VValue)

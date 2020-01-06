@@ -31,16 +31,16 @@ data TypesTestMessage = TypesTestMessage
 
 tmSchema :: Schema
 tmSchema =
-  let fld nm = Field nm [] Nothing Nothing False
+  let fld ix nm = Field nm [] Nothing Nothing (AsIs ix)
    in Record "avro.haskell.test.TypesTestMessage" [] Nothing Nothing
-        [ fld "id" Long Nothing
-        , fld "name" String Nothing
-        , fld "timestamp" (mkUnion (Null :| [Long])) Nothing
-        , fld "foreignId" (mkUnion (Null :| [Long])) Nothing
-        , fld "competence" (mkUnion (Null :| [Double])) Nothing
-        , fld "relevance" (mkUnion (Null :| [Float])) Nothing
-        , fld "severity" Float Nothing
-        , fld "attraction" Double Nothing
+        [ fld 0 "id" Long Nothing
+        , fld 1 "name" String Nothing
+        , fld 2 "timestamp" (mkUnion (Null :| [Long])) Nothing
+        , fld 3 "foreignId" (mkUnion (Null :| [Long])) Nothing
+        , fld 4 "competence" (mkUnion (Null :| [Double])) Nothing
+        , fld 5 "relevance" (mkUnion (Null :| [Float])) Nothing
+        , fld 6 "severity" Float Nothing
+        , fld 7 "attraction" Double Nothing
         ]
 
 instance HasAvroSchema TypesTestMessage where

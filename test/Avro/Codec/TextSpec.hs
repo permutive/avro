@@ -20,9 +20,9 @@ newtype OnlyText = OnlyText
 
 onlyTextSchema :: Schema
 onlyTextSchema =
-  let fld nm = Field nm [] Nothing Nothing False
+  let fld ix nm = Field nm [] Nothing Nothing (AsIs ix)
   in Record "test.contract.OnlyText" [] Nothing Nothing
-        [ fld "onlyTextValue" String Nothing
+        [ fld 0 "onlyTextValue" String Nothing
         ]
 
 instance HasAvroSchema OnlyText where

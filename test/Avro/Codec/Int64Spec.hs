@@ -32,9 +32,9 @@ newtype OnlyInt64 = OnlyInt64
 
 onlyInt64Schema :: Schema
 onlyInt64Schema =
-  let fld nm = Field nm [] Nothing Nothing False
+  let fld ix nm = Field nm [] Nothing Nothing (AsIs ix)
    in Record "test.contract.OnlyInt64" [] Nothing Nothing
-        [ fld "onlyInt64Value"    Long Nothing
+        [ fld 0 "onlyInt64Value"    Long Nothing
         ]
 
 instance HasAvroSchema OnlyInt64 where
