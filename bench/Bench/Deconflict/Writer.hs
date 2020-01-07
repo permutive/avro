@@ -63,11 +63,6 @@ deriveAvroFromByteString [r|
 deriving instance NFData Inner
 deriving instance NFData Outer
 
--- getRecordValues :: Schema -> ByteString -> Vector Dynamic
--- getRecordValues (Record _ _ _ _ fs) =
---   let
---   in undefined
-
 data VValue
       = Null
       | Boolean Bool
@@ -133,10 +128,23 @@ getField env sch = case sch of
   S.Int                   -> fmap Int     Get.getAvro
   S.String                -> fmap String  Get.getAvro
   S.Record _ _ _ _ fields -> fmap Record  (getRecord env fields)
+
   S.NamedType tn          -> 
     case HashMap.lookup tn env of
       Nothing -> fail $ "Unable to resolve type name " <> show tn
       Just r  -> getField env r
+
+  S.Enum _ _ _ symbs      -> do
+    i <- Get.getLong 
+    case symbs V.!? fromIntegral i of
+      Nothing -> fail $ "Enum " <> show symbs <> " doesn't contain value at position " <> show i 
+      Just v  -> pure $ Enum (fromIntegral i) v
+
+  S.Union opts            -> do
+    i <- Get.getLong
+    case opts V.!? fromIntegral i of
+      Nothing -> fail $ "Decoded Avro tag is outside the expected range for a Union. Tag: " <> show i <> " union of: " <> show (V.map S.typeName opts)
+      Just t  -> Union (fromIntegral i) <$> getField env t
 
 ggOuter :: ByteString -> Either String Outer
 ggOuter bs = case runGetOrFail (getValue schema'Outer) bs of
