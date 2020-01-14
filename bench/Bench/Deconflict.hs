@@ -52,8 +52,7 @@ notOnly :: Benchmark
 notOnly = env (many 1e5 $ encode <$> newOuter) $ \ values ->
   bgroup "strict"
     [ bgroup "new stuff"
-        [ bench "read directly"   $ nf (fmap W.getOuter') values
-        , bench "read via value"  $ nf (fmap (decode @W.Outer)) values
+        [ bench "read via value"  $ nf (fmap (decode @W.Outer)) values
         , bench "ggOuter"         $ nf (fmap W.ggOuter) values
         ]
     ]
