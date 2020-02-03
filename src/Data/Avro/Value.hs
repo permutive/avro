@@ -107,8 +107,8 @@ instance FromValue a => FromValue (Maybe a) where
   fromValue (Union 1 v)    = Just <$> fromValue v
 
 instance (FromValue a, FromValue b) => FromValue (Either a b) where
-  fromValue (Union 0 a) = Right <$> fromValue a
-  fromValue (Union 1 b) = Left <$> fromValue b
+  fromValue (Union 0 a) = Left <$> fromValue a
+  fromValue (Union 1 b) = Right <$> fromValue b
   fromValue (Union n _) = Left ("Unable to decode union value with a position #" <> show n)
 
 instance FromValue a => FromValue (Map.Map Text a) where
