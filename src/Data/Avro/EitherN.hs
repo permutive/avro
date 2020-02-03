@@ -10,6 +10,8 @@ import           Data.Avro
 import           Data.Avro.Decode.Lazy as AL
 import           Data.Avro.Schema
 import qualified Data.Avro.Types       as T
+import           Data.Avro.Value       (FromValue (..))
+import qualified Data.Avro.Value       as AV
 import           Data.Bifoldable       (Bifoldable (..))
 import           Data.Bifunctor        (Bifunctor (..))
 import           Data.Bitraversable    (Bitraversable (..))
@@ -238,3 +240,25 @@ instance (ToAvro a, ToAvro b, ToAvro c, ToAvro d, ToAvro e) => ToAvro (Either5 a
       E5_3 c -> T.Union sch (schemaOf c) (toAvro c)
       E5_4 d -> T.Union sch (schemaOf d) (toAvro d)
       E5_5 e -> T.Union sch (schemaOf e) (toAvro e)
+
+------------ DATA.AVRO.VALUE --------------------------------
+instance (FromValue a, FromValue b, FromValue c) => FromValue (Either3 a b c) where
+  fromValue (AV.Union 0 a) = E3_1 <$> fromValue a
+  fromValue (AV.Union 1 b) = E3_2 <$> fromValue b
+  fromValue (AV.Union 2 c) = E3_3 <$> fromValue c
+  fromValue (AV.Union n _) = Left ("Unable to decode Either3 from a position #" <> show n)
+
+instance (FromValue a, FromValue b, FromValue c, FromValue d) => FromValue (Either4 a b c d) where
+  fromValue (AV.Union 0 a) = E4_1 <$> fromValue a
+  fromValue (AV.Union 1 b) = E4_2 <$> fromValue b
+  fromValue (AV.Union 2 c) = E4_3 <$> fromValue c
+  fromValue (AV.Union 3 d) = E4_4 <$> fromValue d
+  fromValue (AV.Union n _) = Left ("Unable to decode Either4 from a position #" <> show n)
+
+instance (FromValue a, FromValue b, FromValue c, FromValue d, FromValue e) => FromValue (Either5 a b c d e) where
+  fromValue (AV.Union 0 a) = E5_1 <$> fromValue a
+  fromValue (AV.Union 1 b) = E5_2 <$> fromValue b
+  fromValue (AV.Union 2 c) = E5_3 <$> fromValue c
+  fromValue (AV.Union 3 d) = E5_4 <$> fromValue d
+  fromValue (AV.Union 4 e) = E5_5 <$> fromValue e
+  fromValue (AV.Union n _) = Left ("Unable to decode Either5 from a position #" <> show n)

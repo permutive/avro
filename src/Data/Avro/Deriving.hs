@@ -50,6 +50,8 @@ import           Data.Maybe         (fromMaybe)
 import           Data.Semigroup     ((<>))
 import qualified Data.Text          as Text
 
+import qualified Data.Avro.Value as AV
+
 import GHC.Generics (Generic)
 
 import Language.Haskell.TH        as TH hiding (notStrict)
@@ -240,8 +242,9 @@ deriveAvroWithOptions' o s = do
   hasSchema <- traverse (genHasAvroSchema $ namespaceBehavior o) schemas
   fromAvros <- traverse (genFromAvro $ namespaceBehavior o) schemas
   fromLazyAvros <- traverse (genFromLazyAvro $ namespaceBehavior o) schemas
+  fromValues <- traverse (genFromAvroNew $ namespaceBehavior o) schemas
   toAvros   <- traverse (genToAvro o) schemas
-  pure $ join types <> join hasSchema <> join fromAvros <> join fromLazyAvros <> join toAvros
+  pure $ join types <> join hasSchema <> join fromAvros <> join fromLazyAvros <> join toAvros <> join fromValues
 
 -- | Derives "read only" Avro from a given schema file. For a schema
 -- with a top-level definition @com.example.Foo@, this generates:
@@ -273,7 +276,8 @@ deriveFromAvroWithOptions' o s = do
   hasSchema <- traverse (genHasAvroSchema $ namespaceBehavior o) schemas
   fromAvros <- traverse (genFromAvro $ namespaceBehavior o) schemas
   fromLazyAvros <- traverse (genFromLazyAvro $ namespaceBehavior o) schemas
-  pure $ join types <> join hasSchema <> join fromAvros <> join fromLazyAvros
+  fromValues <- traverse (genFromAvroNew $ namespaceBehavior o) schemas
+  pure $ join types <> join hasSchema <> join fromAvros <> join fromLazyAvros <> join fromValues
 
 -- | Same as 'deriveAvroWithOptions' but uses 'defaultDeriveOptions'
 --
@@ -362,6 +366,39 @@ genFromAvroFieldsExp n (x:xs) =
           ctor = [| $(conE n) <$> $(extract x) |]
       in foldl (\expr fld -> [| $expr <*> $(extract fld) |]) ctor xs
      )
+  |]
+
+---------------------------- New FromAvro -----------------------------------------
+
+badValueNew :: Show v => v -> String -> Either String a
+badValueNew v t = Left $ "Unexpected value for '" <> t <> "': " <> show v
+
+genFromAvroNew :: NamespaceBehavior -> Schema -> Q [Dec]
+genFromAvroNew namespaceBehavior (S.Enum n _ _ _ ) =
+  [d| instance AV.FromValue $(conT $ mkDataTypeName namespaceBehavior n) where
+        fromValue (AV.Enum i _) = $([| pure . toEnum|]) i
+        fromValue value         = $( [|\v -> badValueNew v $(mkTextLit $ S.renderFullname n)|] ) value
+  |]
+genFromAvroNew namespaceBehavior (S.Record n _ _ _ fs) =
+  [d| instance AV.FromValue $(conT $ mkDataTypeName namespaceBehavior n) where
+        fromValue (AV.Record r) =
+           $(genFromAvroNewFieldsExp (mkDataTypeName namespaceBehavior n) fs) r
+        fromValue value           = $( [|\v -> badValueNew v $(mkTextLit $ S.renderFullname n)|] ) value
+  |]
+genFromAvroNew namespaceBehavior (S.Fixed n _ s) =
+  [d| instance AV.FromValue $(conT $ mkDataTypeName namespaceBehavior n) where
+        fromValue (AV.Fixed v)
+          | BS.length v == s = pure $ $(conE (mkDataTypeName namespaceBehavior n)) v
+        fromValue value = $( [|\v -> badValueNew v $(mkTextLit $ S.renderFullname n)|] ) value
+  |]
+genFromAvroNew _ _                             = pure []
+
+genFromAvroNewFieldsExp :: Name -> [Field] -> Q Exp
+genFromAvroNewFieldsExp n xs =
+  [| \r ->
+    $(let ctor = [| pure $(conE n) |]
+      in foldl (\expr (i, _) -> [| $expr <*> AV.fromValue (r V.! i) |]) ctor (zip [(0 :: Int)..] xs)
+    )
   |]
 
 -------------------------------- FromLazyAvro ---------------------------------

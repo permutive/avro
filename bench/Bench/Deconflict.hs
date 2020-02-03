@@ -26,21 +26,21 @@ import qualified System.Random           as Random
 
 import Gauge
 
-newOuter :: IO (W.Outer)
+newOuter :: IO W.Outer
 newOuter = do
   i1 <- Random.randomRIO (minBound, maxBound)
   i2 <- Random.randomRIO (minBound, maxBound)
   pure $ W.Outer "Written" (W.Inner i1) (W.Inner i2)
 
 many :: Int -> IO a -> IO (Vector a)
-many n f = Vector.replicateM n f
+many = Vector.replicateM
 
 -- | Only deconflicts values without actually decoding into generated types
 only :: Benchmark
 only = env (many 1e5 $ toAvro <$> newOuter) $ \ values ->
-  bgroup "strict"
-    [ bgroup "no deconflict"
-        [ bench "read as is" $ nf (fmap (\x -> (fromAvro x :: Result W.Outer))) values
+  bgroup "Encoded: Value"
+    [ bgroup "No Deconflict"
+        [ bench "Decode from value" $ nf (fmap (fromAvro @W.Outer)) values
         ]
     -- , bgroup "deconflict"
     --     [ bench "plain"     $ nf (fmap (deconflict          W.schema'Outer R.schema'Outer)) $ values
@@ -50,10 +50,10 @@ only = env (many 1e5 $ toAvro <$> newOuter) $ \ values ->
 
 notOnly :: Benchmark
 notOnly = env (many 1e5 $ encode <$> newOuter) $ \ values ->
-  bgroup "strict"
-    [ bgroup "new stuff"
-        [ bench "read via value"  $ nf (fmap (decode @W.Outer)) values
-        , bench "ggOuter"         $ nf (fmap W.ggOuter) values
+  bgroup "Encoded: ByteString"
+    [ bgroup "No Deconflict"
+        [ bench "Read via current values"  $ nf (fmap (decode @W.Outer)) values
+        , bench "Read via new values"      $ nf (fmap W.ggOuter) values
         ]
     ]
 
