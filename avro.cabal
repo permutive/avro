@@ -250,6 +250,7 @@ benchmark bench-time
   other-modules:        Bench.Deconflict
                         Bench.Deconflict.Reader
                         Bench.Deconflict.Writer
+                        Bench.Encoding
                         Bench.Time
   hs-source-dirs:       bench
 
