@@ -10,12 +10,19 @@ import qualified Data.Avro.Schema     as Schema
 import           Data.Avro.Value
 import           Data.Binary.Get      (Get)
 import qualified Data.Binary.Get      as Get
+import qualified Data.ByteString.Lazy as BL
 import           Data.HashMap.Strict  (HashMap)
 import qualified Data.HashMap.Strict  as HashMap
 import           Data.Text            (Text)
 import           Data.Vector          (Vector)
 import qualified Data.Vector          as V
 import qualified Data.Vector.Mutable  as MV
+
+decodeValueWithSchema :: FromValue a => Schema -> BL.ByteString -> Either String a
+decodeValueWithSchema deconflictedSchema payload =
+  case Get.runGetOrFail (getValue deconflictedSchema) payload of
+    Right (_, _, v) -> fromValue v
+    Left (_, _, e)  -> Left e
 
 getValue :: Schema -> Get Value
 getValue sch =
@@ -24,8 +31,10 @@ getValue sch =
 
 getField :: HashMap TypeName Schema -> Schema -> Get Value
 getField env sch = case sch of
+  Schema.Null                  -> pure Null
   Schema.Boolean               -> fmap Boolean Get.getAvro
   Schema.Int                   -> fmap Int     Get.getAvro
+  Schema.Long                  -> fmap Long    Get.getAvro
   Schema.String                -> fmap String  Get.getAvro
   Schema.Record _ _ _ _ fields -> fmap Record  (getRecord env fields)
   Schema.Bytes                 -> fmap Bytes   Get.getAvro
@@ -56,6 +65,8 @@ getField env sch = case sch of
   Schema.Map  t  -> do
     kvs <- getKVBlocks env t
     return $ Map (HashMap.fromList $ mconcat kvs)
+
+  s -> error ("Not expected: " <> show s)
 
 getKVBlocks :: HashMap TypeName Schema -> Schema -> Get [[(Text, Value)]]
 getKVBlocks env t = do

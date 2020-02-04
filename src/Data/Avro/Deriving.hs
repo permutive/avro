@@ -687,15 +687,15 @@ genNewtype dn = do
 genEnum :: Name -> [Name] -> Q Dec
 #if MIN_VERSION_template_haskell(2,12,0)
 genEnum dn vs = do
-  ders <- sequenceA [[t|Eq|], [t|Show|], [t|Ord|], [t|Enum|], [t|Generic|]]
+  ders <- sequenceA [[t|Eq|], [t|Show|], [t|Ord|], [t|Enum|], [t|Bounded|], [t|Generic|]]
   pure $ DataD [] dn [] Nothing ((\n -> NormalC n []) <$> vs) [DerivClause Nothing ders]
 #elif MIN_VERSION_template_haskell(2,11,0)
 genEnum dn vs = do
-  ders <- sequenceA [[t|Eq|], [t|Show|], [t|Ord|], [t|Enum|], [t|Generic|]]
+  ders <- sequenceA [[t|Eq|], [t|Show|], [t|Ord|], [t|Enum|], [t|Bounded|], [t|Generic|]]
   pure $ DataD [] dn [] Nothing ((\n -> NormalC n []) <$> vs) ders
 #else
 genEnum dn vs = do
-  [ConT eq, ConT sh, ConT or, ConT en, ConT gen] <- sequenceA [[t|Eq|], [t|Show|], [t|Ord|], [t|Enum|], [t|Generic|]]
+  [ConT eq, ConT sh, ConT or, ConT en, ConT gen] <- sequenceA [[t|Eq|], [t|Show|], [t|Ord|], [t|Enum|], [t|Bounded|], [t|Generic|]]
   pure $ DataD [] dn [] ((\n -> NormalC n []) <$> vs) [eq, sh, or, en, gen]
 #endif
 

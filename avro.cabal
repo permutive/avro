@@ -1,4 +1,4 @@
-cabal-version: 2.2
+cabal-version: 2.4
 
 name:                   avro
 version:                0.4.5.4
@@ -67,6 +67,8 @@ common extra                    { build-depends: extra                          
 common fail                     { build-depends: fail                                               }
 common gauge                    { build-depends: gauge                                              }
 common hashable                 { build-depends: hashable                                           }
+common hedgehog                 { build-depends: hedgehog                                           }
+common hw-hspec-hedgehog        { build-depends: hw-hspec-hedgehog                                  }
 common hspec                    { build-depends: hspec                                              }
 common lens                     { build-depends: lens                                               }
 common lens-aeson               { build-depends: lens-aeson                                         }
@@ -163,11 +165,12 @@ test-suite test
                       , extra
                       , fail
                       , hashable
+                      , hedgehog
+                      , hw-hspec-hedgehog
                       , hspec
                       , lens
                       , lens-aeson
                       , mtl
-                      , zlib
                       , QuickCheck
                       , raw-strings-qq
                       , scientific
@@ -178,6 +181,7 @@ test-suite test
                       , transformers
                       , unordered-containers
                       , vector
+                      , zlib
   type:                 exitcode-stdio-1.0
   ghc-options:          -threaded
   default-language:     Haskell2010
@@ -194,6 +198,12 @@ test-suite test
                         Avro.Codec.NestedSpec
                         Avro.Codec.TextSpec
                         Avro.Codec.ZigZagSpec
+                        Avro.Data.Enums
+                        Avro.Data.FixedTypes
+                        Avro.Data.Karma
+                        Avro.Data.Reused
+                        Avro.Data.Endpoint
+                        Avro.Data.Unions
                         Avro.Decode.Lazy.ContainerSpec
                         Avro.Decode.Lazy.RawBlocksSpec
                         Avro.Decode.Lazy.RawValuesSpec
@@ -221,6 +231,7 @@ test-suite test
                         Avro.THSimpleSpec
                         Avro.THUnionSpec
                         Avro.ToAvroSpec
+                        Avro.ToEncodingSpec
                         DecodeContainer
                         Example1
                         Paths_avro
@@ -229,8 +240,8 @@ test-suite test
 
 benchmark bench-time
   import:               base, config
-                      , avro
                       , aeson
+                      , avro
                       , binary
                       , bytestring
                       , containers
