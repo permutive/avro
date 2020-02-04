@@ -1,10 +1,9 @@
-{-# LANGUAGE FlexibleInstances    #-}
-{-# LANGUAGE OverloadedStrings    #-}
-{-# LANGUAGE RecordWildCards      #-}
-{-# LANGUAGE ScopedTypeVariables  #-}
-{-# LANGUAGE TypeApplications     #-}
-{-# LANGUAGE TypeFamilies         #-}
-{-# LANGUAGE TypeSynonymInstances #-}
+{-# LANGUAGE FlexibleInstances   #-}
+{-# LANGUAGE OverloadedStrings   #-}
+{-# LANGUAGE RecordWildCards     #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TypeApplications    #-}
+{-# LANGUAGE TypeFamilies        #-}
 
 module Data.Avro.Encode
   ( -- * High level interface
@@ -21,6 +20,7 @@ module Data.Avro.Encode
   , packContainerValuesWithSync
   -- * Lower level interface
   , EncodeAvro(..)
+  , ToEncoding(..), putI
   , Zag(..)
   , putAvro
   ) where
@@ -41,6 +41,7 @@ import           Data.Ix                    (Ix)
 import           Data.List                  as DL
 import           Data.List.NonEmpty         (NonEmpty (..))
 import qualified Data.List.NonEmpty         as NE
+import qualified Data.Map.Strict            as Map
 import           Data.Maybe                 (catMaybes, mapMaybe)
 import           Data.Monoid
 import           Data.Proxy
@@ -281,6 +282,12 @@ instance (U.Unbox a, ToEncoding a) => ToEncoding (U.Vector a) where
   toEncoding (S.Array s) as =
     if U.null as then long0 else encodeRaw (U.length as) <> foldMap (toEncoding s) (U.toList as) <> long0
   toEncoding s _         = error ("Unable to encode Vector list as: " <> show s)
+
+instance ToEncoding a => ToEncoding (Map.Map Text a) where
+  toEncoding (S.Map s) hm =
+    if Map.null hm then long0 else putI (F.length hm) <> foldMap putKV (Map.toList hm) <> long0
+    where putKV (k,v) = toEncoding S.String k <> toEncoding s v
+  toEncoding s _         = error ("Unable to encode HashMap as: " <> show s)
 
 instance ToEncoding a => ToEncoding (HashMap Text a) where
   toEncoding (S.Map s) hm =

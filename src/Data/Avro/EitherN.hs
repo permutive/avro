@@ -8,7 +8,8 @@ module Data.Avro.EitherN where
 
 import           Data.Avro
 import           Data.Avro.Decode.Lazy as AL
-import           Data.Avro.Schema
+import           Data.Avro.Encode      (ToEncoding (..), putI)
+import           Data.Avro.Schema      as S
 import qualified Data.Avro.Types       as T
 import           Data.Avro.Value       (FromValue (..))
 import qualified Data.Avro.Value       as AV
@@ -17,6 +18,7 @@ import           Data.Bifunctor        (Bifunctor (..))
 import           Data.Bitraversable    (Bitraversable (..))
 import           Data.List.NonEmpty
 import           Data.Tagged
+import qualified Data.Vector           as V
 import           GHC.Generics          (Generic)
 
 data Either3 a b c = E3_1 a | E3_2 b | E3_3 c deriving (Eq, Ord, Show, Generic, Functor, Foldable, Traversable)
@@ -262,3 +264,36 @@ instance (FromValue a, FromValue b, FromValue c, FromValue d, FromValue e) => Fr
   fromValue (AV.Union 3 d) = E5_4 <$> fromValue d
   fromValue (AV.Union 4 e) = E5_5 <$> fromValue e
   fromValue (AV.Union n _) = Left ("Unable to decode Either5 from a position #" <> show n)
+
+instance (ToEncoding a, ToEncoding b, ToEncoding c) => ToEncoding (Either3 a b c) where
+  toEncoding (S.Union opts) v =
+    case V.toList opts of
+      [sa, sb, sc] -> case v of
+        E3_1 a -> putI 0 <> toEncoding sa a
+        E3_2 b -> putI 1 <> toEncoding sb b
+        E3_3 c -> putI 2 <> toEncoding sc c
+      wrongOpts   -> error ("Unable to encode Either3 as " <> show wrongOpts)
+  toEncoding s _ = error ("Unable to encode Either3 as " <> show s)
+
+instance (ToEncoding a, ToEncoding b, ToEncoding c, ToEncoding d) => ToEncoding (Either4 a b c d) where
+  toEncoding (S.Union opts) v =
+    case V.toList opts of
+      [sa, sb, sc, sd] -> case v of
+        E4_1 a -> putI 0 <> toEncoding sa a
+        E4_2 b -> putI 1 <> toEncoding sb b
+        E4_3 c -> putI 2 <> toEncoding sc c
+        E4_4 d -> putI 3 <> toEncoding sd d
+      wrongOpts   -> error ("Unable to encode Either4 as " <> show wrongOpts)
+  toEncoding s _ = error ("Unable to encode Either4 as " <> show s)
+
+instance (ToEncoding a, ToEncoding b, ToEncoding c, ToEncoding d, ToEncoding e) => ToEncoding (Either5 a b c d e) where
+  toEncoding (S.Union opts) v =
+    case V.toList opts of
+      [sa, sb, sc, sd, se] -> case v of
+        E5_1 a -> putI 0 <> toEncoding sa a
+        E5_2 b -> putI 1 <> toEncoding sb b
+        E5_3 c -> putI 2 <> toEncoding sc c
+        E5_4 d -> putI 3 <> toEncoding sd d
+        E5_5 e -> putI 4 <> toEncoding se e
+      wrongOpts   -> error ("Unable to encode Either5 as " <> show wrongOpts)
+  toEncoding s _ = error ("Unable to encode Either5 as " <> show s)
