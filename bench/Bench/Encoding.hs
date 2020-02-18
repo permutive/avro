@@ -17,14 +17,14 @@ module Bench.Encoding
 where
 
 import           Control.DeepSeq
-import           Data.Avro               (encode)
-import           Data.Avro.Deriving      (deriveAvroFromByteString)
-import           Data.Avro.Encode        (toEncoding)
-import           Data.ByteString         (ByteString)
+import           Data.Avro                     (encode)
+import           Data.Avro.Deriving            (deriveAvroFromByteString)
+import           Data.Avro.Encoding.ToEncoding (toEncoding)
+import           Data.ByteString               (ByteString)
 import           Data.ByteString.Builder
-import qualified Data.ByteString.Lazy    as BL
-import qualified Data.Vector             as Vector
-import qualified System.Random           as Random
+import qualified Data.ByteString.Lazy          as BL
+import qualified Data.Vector                   as Vector
+import qualified System.Random                 as Random
 import           Text.RawString.QQ
 
 import Gauge

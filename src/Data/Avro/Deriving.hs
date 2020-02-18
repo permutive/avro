@@ -33,23 +33,23 @@ module Data.Avro.Deriving
 )
 where
 
-import           Control.Monad      (join)
-import           Data.Aeson         (eitherDecode)
-import qualified Data.Aeson         as J
-import           Data.Avro          hiding (decode, encode)
-import           Data.Avro.Encode   (ToEncoding (..), putI)
-import           Data.Avro.Schema   as S
-import qualified Data.Avro.Types    as AT
-import           Data.ByteString    (ByteString)
-import qualified Data.ByteString    as B
-import           Data.Char          (isAlphaNum)
+import           Control.Monad                 (join)
+import           Data.Aeson                    (eitherDecode)
+import qualified Data.Aeson                    as J
+import           Data.Avro                     hiding (decode, encode)
+import           Data.Avro.Encoding.ToEncoding (ToEncoding (..), putI)
+import           Data.Avro.Schema              as S
+import qualified Data.Avro.Types               as AT
+import           Data.ByteString               (ByteString)
+import qualified Data.ByteString               as B
+import           Data.Char                     (isAlphaNum)
 import           Data.Int
-import           Data.List.NonEmpty (NonEmpty ((:|)))
-import qualified Data.List.NonEmpty as NE
-import           Data.Map           (Map)
-import           Data.Maybe         (fromMaybe)
-import           Data.Semigroup     ((<>))
-import qualified Data.Text          as Text
+import           Data.List.NonEmpty            (NonEmpty ((:|)))
+import qualified Data.List.NonEmpty            as NE
+import           Data.Map                      (Map)
+import           Data.Maybe                    (fromMaybe)
+import           Data.Semigroup                ((<>))
+import qualified Data.Text                     as Text
 
 import qualified Data.Avro.Value as AV
 

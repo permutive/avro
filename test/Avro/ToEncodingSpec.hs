@@ -3,10 +3,10 @@ module Avro.ToEncodingSpec
 )
 where
 
-import           Data.Avro               (decode)
-import           Data.Avro.Decode.Value  (decodeValueWithSchema)
-import qualified Data.Avro.Encode        as Encode
-import           Data.Avro.Schema        (resultToEither)
+import           Data.Avro                     (decode)
+import           Data.Avro.Decode.Value        (decodeValueWithSchema)
+import qualified Data.Avro.Encoding.ToEncoding as Encode
+import           Data.Avro.Schema              (resultToEither)
 import           Data.ByteString.Builder
 import           Data.ByteString.Lazy
 

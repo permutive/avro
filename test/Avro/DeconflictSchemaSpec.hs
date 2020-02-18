@@ -24,9 +24,9 @@ import qualified Avro.Deconflict.D.Writer      as DW
 import qualified Avro.Deconflict.Unions.Reader as UnionsR
 import qualified Avro.Deconflict.Unions.Writer as UnionsW
 
-import           Data.Avro.Decode.Value      (decodeValueWithSchema)
-import qualified Data.Avro.Encode            as Encode
-import qualified Data.Avro.Schema.Deconflict as Schema
+import           Data.Avro.Decode.Value        (decodeValueWithSchema)
+import qualified Data.Avro.Encoding.ToEncoding as Encode
+import qualified Data.Avro.Schema.Deconflict   as Schema
 
 import HaskellWorks.Hspec.Hedgehog
 import Hedgehog

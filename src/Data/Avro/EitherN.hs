@@ -7,19 +7,19 @@
 module Data.Avro.EitherN where
 
 import           Data.Avro
-import           Data.Avro.Decode.Lazy as AL
-import           Data.Avro.Encode      (ToEncoding (..), putI)
-import           Data.Avro.Schema      as S
-import qualified Data.Avro.Types       as T
-import           Data.Avro.Value       (FromValue (..))
-import qualified Data.Avro.Value       as AV
-import           Data.Bifoldable       (Bifoldable (..))
-import           Data.Bifunctor        (Bifunctor (..))
-import           Data.Bitraversable    (Bitraversable (..))
+import           Data.Avro.Decode.Lazy         as AL
+import           Data.Avro.Encoding.ToEncoding (ToEncoding (..), putI)
+import           Data.Avro.Schema              as S
+import qualified Data.Avro.Types               as T
+import           Data.Avro.Value               (FromValue (..))
+import qualified Data.Avro.Value               as AV
+import           Data.Bifoldable               (Bifoldable (..))
+import           Data.Bifunctor                (Bifunctor (..))
+import           Data.Bitraversable            (Bitraversable (..))
 import           Data.List.NonEmpty
 import           Data.Tagged
-import qualified Data.Vector           as V
-import           GHC.Generics          (Generic)
+import qualified Data.Vector                   as V
+import           GHC.Generics                  (Generic)
 
 data Either3 a b c = E3_1 a | E3_2 b | E3_3 c deriving (Eq, Ord, Show, Generic, Functor, Foldable, Traversable)
 
