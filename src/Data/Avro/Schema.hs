@@ -125,7 +125,7 @@ data Schema
       | LongFloatCoercion
       | LongDoubleCoercion
       | FloatDoubleCoercion
-      | FreeUnion { ty :: Type }
+      | FreeUnion { pos :: Int, ty :: Type }
     deriving (Show, Generic, NFData)
 
 instance Eq Schema where
@@ -156,7 +156,7 @@ instance Eq Schema where
   LongFloatCoercion   == LongFloatCoercion   = True
   LongDoubleCoercion  == LongDoubleCoercion  = True
   FloatDoubleCoercion == FloatDoubleCoercion = True
-  FreeUnion ty1 == FreeUnion ty2 = ty1 == ty2
+  FreeUnion _ ty1 == FreeUnion _ ty2 = ty1 == ty2
 
   _ == _ = False
 
@@ -305,20 +305,20 @@ typeName bt =
     Union ts       -> typeName (V.head ts)
     _              -> renderFullname $ name bt
 
-data FieldStatus 
+data FieldStatus
   = AsIs Int
-  | Ignored 
+  | Ignored
   | Defaulted
   deriving (Show, Eq, Generic, NFData)
 
 
-data Field = Field { fldName       :: Text
-                   , fldAliases    :: [Text]
-                   , fldDoc        :: Maybe Text
-                   , fldOrder      :: Maybe Order
-                   , fldStatus     :: FieldStatus
-                   , fldType       :: Schema
-                   , fldDefault    :: Maybe (Ty.Value Schema)
+data Field = Field { fldName    :: Text
+                   , fldAliases :: [Text]
+                   , fldDoc     :: Maybe Text
+                   , fldOrder   :: Maybe Order
+                   , fldStatus  :: FieldStatus
+                   , fldType    :: Schema
+                   , fldDefault :: Maybe (Ty.Value Schema)
                    }
   deriving (Eq, Show, Generic, NFData)
 
@@ -466,7 +466,7 @@ schemaToJSON context = \case
   LongFloatCoercion   -> A.String "float"
   LongDoubleCoercion  -> A.String "double"
   FloatDoubleCoercion -> A.String "double"
-  FreeUnion ty        -> schemaToJSON context ty
+  FreeUnion _ ty        -> schemaToJSON context ty
   Array tn       ->
     object [ "type" .= ("array" :: Text), "items" .= schemaToJSON context tn ]
   Map tn         ->

@@ -82,12 +82,12 @@ getAvroOf ty0 = go ty0
     LongFloatCoercion   -> T.Float  . fromIntegral <$> getAvro @Int64
     LongDoubleCoercion  -> T.Double . fromIntegral <$> getAvro @Int64
     FloatDoubleCoercion -> T.Double . realToFrac   <$> getAvro @Float
-    FreeUnion ty -> T.Union (V.singleton ty) ty <$> go ty
+    FreeUnion _ ty -> T.Union (V.singleton ty) ty <$> go ty
 
  getField :: Field -> Get (Maybe (Text, T.Value Schema))
  getField Field{..} =
   case (fldStatus, fldDefault) of
-    (AsIs _, _)           -> Just . (fldName,) <$> go fldType
+    (AsIs _, _)          -> Just . (fldName,) <$> go fldType
     (Defaulted, Just v)  -> pure $ Just (fldName, v)
     (Ignored,   Nothing) -> go fldType >> pure Nothing
 

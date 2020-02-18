@@ -66,6 +66,10 @@ getField env sch = case sch of
     kvs <- getKVBlocks env t
     return $ Map (HashMap.fromList $ mconcat kvs)
 
+  Schema.FreeUnion ix t -> do
+    v <- getField env t
+    pure $ Union ix v
+
   s -> error ("Not expected: " <> show s)
 
 getKVBlocks :: HashMap TypeName Schema -> Schema -> Get [[(Text, Value)]]

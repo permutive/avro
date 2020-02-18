@@ -120,6 +120,7 @@ library
   exposed-modules:      Data.Avro
                         Data.Avro.Codec
                         Data.Avro.Decode
+                        Data.Avro.Decode.Container
                         Data.Avro.Decode.Get
                         Data.Avro.Decode.Lazy
                         Data.Avro.Decode.Lazy.Convert
@@ -216,6 +217,9 @@ test-suite test
                         Avro.Deconflict.C.Writer
                         Avro.Deconflict.D.Reader
                         Avro.Deconflict.D.Writer
+                        Avro.Deconflict.Unions.Reader
+                        Avro.Deconflict.Unions.Writer
+                        Avro.DeconflictSchemaSpec
                         Avro.DeconflictSpec
                         Avro.DefaultsSpec
                         Avro.EncodeRawSpec
