@@ -3,7 +3,7 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE StrictData        #-}
 
-module Data.Avro.Value where
+module Data.Avro.Encoding.Value where
 
 import Control.DeepSeq     (NFData)
 import Data.HashMap.Strict (HashMap)

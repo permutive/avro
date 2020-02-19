@@ -9,10 +9,10 @@ module Data.Avro.EitherN where
 import           Data.Avro
 import           Data.Avro.Decode.Lazy         as AL
 import           Data.Avro.Encoding.ToEncoding (ToEncoding (..), putI)
+import           Data.Avro.Encoding.Value      (FromValue (..))
+import qualified Data.Avro.Encoding.Value      as AV
 import           Data.Avro.Schema              as S
 import qualified Data.Avro.Types               as T
-import           Data.Avro.Value               (FromValue (..))
-import qualified Data.Avro.Value               as AV
 import           Data.Bifoldable               (Bifoldable (..))
 import           Data.Bifunctor                (Bifunctor (..))
 import           Data.Bitraversable            (Bitraversable (..))

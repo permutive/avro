@@ -51,7 +51,7 @@ import           Data.Maybe                    (fromMaybe)
 import           Data.Semigroup                ((<>))
 import qualified Data.Text                     as Text
 
-import qualified Data.Avro.Value as AV
+import qualified Data.Avro.Encoding.Value as AV
 
 import GHC.Generics (Generic)
 

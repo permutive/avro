@@ -1,22 +1,22 @@
 {-# LANGUAGE TupleSections #-}
-module Data.Avro.Decode.Value
+module Data.Avro.Encoding.FromEncoding
 where
 
-import           Control.Monad        (forM, replicateM)
-import           Control.Monad.ST     (ST)
-import qualified Data.Avro.Decode.Get as Get
-import           Data.Avro.Schema     (Field, Schema, TypeName)
-import qualified Data.Avro.Schema     as Schema
-import           Data.Avro.Value
-import           Data.Binary.Get      (Get)
-import qualified Data.Binary.Get      as Get
-import qualified Data.ByteString.Lazy as BL
-import           Data.HashMap.Strict  (HashMap)
-import qualified Data.HashMap.Strict  as HashMap
-import           Data.Text            (Text)
-import           Data.Vector          (Vector)
-import qualified Data.Vector          as V
-import qualified Data.Vector.Mutable  as MV
+import           Control.Monad            (forM, replicateM)
+import           Control.Monad.ST         (ST)
+import qualified Data.Avro.Decode.Get     as Get
+import           Data.Avro.Encoding.Value
+import           Data.Avro.Schema         (Field, Schema, TypeName)
+import qualified Data.Avro.Schema         as Schema
+import           Data.Binary.Get          (Get)
+import qualified Data.Binary.Get          as Get
+import qualified Data.ByteString.Lazy     as BL
+import           Data.HashMap.Strict      (HashMap)
+import qualified Data.HashMap.Strict      as HashMap
+import           Data.Text                (Text)
+import           Data.Vector              (Vector)
+import qualified Data.Vector              as V
+import qualified Data.Vector.Mutable      as MV
 
 decodeValueWithSchema :: FromValue a => Schema -> BL.ByteString -> Either String a
 decodeValueWithSchema deconflictedSchema payload =
