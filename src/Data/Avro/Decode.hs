@@ -50,6 +50,7 @@ import qualified Data.Avro.Types      as T
 import           Data.Avro.Zag
 
 import Data.Avro.Decode.Strict.Internal
+import Data.Avro.Internal.Container     (ContainerHeader (..), getContainerHeader, nrSyncBytes)
 
 -- | Decode bytes into a 'Value' as described by Schema.
 decodeAvro :: Schema -> BL.ByteString -> Either String (T.Value Schema)
@@ -80,7 +81,7 @@ decodeContainerWith schemaToGet bs =
 
 getContainerWith :: (Schema -> Get a) -> Get (Schema, [[a]])
 getContainerWith schemaToGet =
-   do ContainerHeader {..} <- getAvro
+   do ContainerHeader {..} <- getContainerHeader
       (containedSchema,) <$> getBlocks (schemaToGet containedSchema) syncBytes decompress
   where
   getBlocks :: Get a -> BL.ByteString -> (forall x. Decompress x) -> Get [[a]]

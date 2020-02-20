@@ -33,7 +33,6 @@ module Data.Avro.Decode.Lazy
 import           Control.Monad              (foldM, replicateM, when)
 import qualified Data.Aeson                 as A
 import qualified Data.Array                 as Array
-import           Data.Avro.Internal.Get
 import           Data.Binary.Get            (Get, runGetOrFail)
 import qualified Data.Binary.Get            as G
 import           Data.Binary.IEEE754        as IEEE
@@ -71,6 +70,8 @@ import Data.Avro.Decode.Get
 import Data.Avro.Decode.Lazy.Convert      (fromStrictValue, toStrictValue)
 import Data.Avro.Decode.Lazy.FromLazyAvro
 import Data.Avro.FromAvro
+import Data.Avro.Internal.Container       (ContainerHeader (..), getContainerHeader, nrSyncBytes)
+import Data.Avro.Internal.Get
 import Data.Avro.Schema.Deconflict
 
 -- | Decodes the container as a lazy list of values of the requested type.
@@ -166,7 +167,7 @@ getContainerValues = getContainerValuesWith getAvroOf
 -- (including problems like reading schemas embedded into the container.)
 decodeRawBlocks :: BL.ByteString -> Either String (Schema, [Either String (Int, BL.ByteString)])
 decodeRawBlocks bs =
-  case runGetOrFail getAvro bs of
+  case runGetOrFail getContainerHeader bs of
     Left (bs', _, err) -> Left err
     Right (bs', _, ContainerHeader {..}) ->
       let blocks = allBlocks syncBytes decompress bs'

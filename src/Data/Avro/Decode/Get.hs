@@ -34,9 +34,8 @@ import           Prelude                    as P
 
 import Data.Avro.Codec
 import Data.Avro.DecodeRaw
-import Data.Avro.Schema    as S
-
 import Data.Avro.Internal.Get
+import Data.Avro.Schema       as S
 
 class GetAvro a where
   getAvro :: Get a
@@ -79,50 +78,6 @@ instance GetAvro a => GetAvro (V.Vector a) where
   getAvro = V.fromList <$> getAvro
 instance (GetAvro a, Ord a) => GetAvro (Set.Set a) where
   getAvro = Set.fromList <$> getAvro
-
-
-data ContainerHeader = ContainerHeader
-  { syncBytes       :: !BL.ByteString
-  , decompress      :: forall a. Decompress a
-  , containedSchema :: !Schema
-  }
-
-nrSyncBytes :: Integral sb => sb
-nrSyncBytes = 16
-
-instance GetAvro ContainerHeader where
-  getAvro =
-   do magic <- getFixed avroMagicSize
-      when (BL.fromStrict magic /= avroMagicBytes)
-           (fail "Invalid magic number at start of container.")
-      metadata <- getMap :: Get (Map.Map Text BL.ByteString) -- avro.schema, avro.codec
-      sync  <- BL.fromStrict <$> getFixed nrSyncBytes
-      codec <- getCodec (Map.lookup "avro.codec" metadata)
-      schema <- case Map.lookup "avro.schema" metadata of
-                  Nothing -> fail "Invalid container object: no schema."
-                  Just s  -> case A.eitherDecode' s of
-                                Left e  -> fail ("Can not decode container schema: " <> e)
-                                Right x -> return x
-      return ContainerHeader { syncBytes = sync
-                             , decompress = codecDecompress codec
-                             , containedSchema = schema
-                             }
-   where avroMagicSize :: Integral a => a
-         avroMagicSize = 4
-
-         avroMagicBytes :: BL.ByteString
-         avroMagicBytes = BC.pack "Obj" <> BL.pack [1]
-
-         getFixed :: Int -> Get ByteString
-         getFixed = G.getByteString
-
-
-getCodec :: Monad m => Maybe BL.ByteString -> m Codec
-getCodec (Just "null")    = pure nullCodec
-getCodec (Just "deflate") = pure deflateCodec
-getCodec (Just x)         = error $ "Unrecognized codec: " <> BC.unpack x
-getCodec Nothing          = pure nullCodec
-
 
 getArray :: GetAvro ty => Get [ty]
 getArray = decodeBlocks getAvro
