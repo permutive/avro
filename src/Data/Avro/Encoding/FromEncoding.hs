@@ -4,23 +4,23 @@ where
 
 import           Control.Monad            (forM, replicateM)
 import           Control.Monad.ST         (ST)
-import qualified Data.Avro.Decode.Get     as Get
 import           Data.Avro.Encoding.Value
+import qualified Data.Avro.Internal.Get   as Get
 import           Data.Avro.Schema         (Field, Schema, TypeName)
 import qualified Data.Avro.Schema         as Schema
-import           Data.Binary.Get          (Get)
-import qualified Data.Binary.Get          as Get
-import qualified Data.ByteString.Lazy     as BL
-import           Data.HashMap.Strict      (HashMap)
-import qualified Data.HashMap.Strict      as HashMap
-import           Data.Text                (Text)
-import           Data.Vector              (Vector)
-import qualified Data.Vector              as V
-import qualified Data.Vector.Mutable      as MV
+import           Data.Binary.Get          (Get, getByteString, runGetOrFail)
+-- import qualified Data.Binary.Get          as Get
+import qualified Data.ByteString.Lazy as BL
+import           Data.HashMap.Strict  (HashMap)
+import qualified Data.HashMap.Strict  as HashMap
+import           Data.Text            (Text)
+import           Data.Vector          (Vector)
+import qualified Data.Vector          as V
+import qualified Data.Vector.Mutable  as MV
 
 decodeValueWithSchema :: FromValue a => Schema -> BL.ByteString -> Either String a
 decodeValueWithSchema deconflictedSchema payload =
-  case Get.runGetOrFail (getValue deconflictedSchema) payload of
+  case runGetOrFail (getValue deconflictedSchema) payload of
     Right (_, _, v) -> fromValue v
     Left (_, _, e)  -> Left e
 
@@ -32,12 +32,12 @@ getValue sch =
 getField :: HashMap TypeName Schema -> Schema -> Get Value
 getField env sch = case sch of
   Schema.Null                  -> pure Null
-  Schema.Boolean               -> fmap Boolean Get.getAvro
-  Schema.Int                   -> fmap Int     Get.getAvro
-  Schema.Long                  -> fmap Long    Get.getAvro
-  Schema.String                -> fmap String  Get.getAvro
+  Schema.Boolean               -> fmap Boolean Get.getBoolean
+  Schema.Int                   -> fmap Int     Get.getInt
+  Schema.Long                  -> fmap Long    Get.getLong
+  Schema.String                -> fmap String  Get.getString
   Schema.Record _ _ _ _ fields -> fmap Record  (getRecord env fields)
-  Schema.Bytes                 -> fmap Bytes   Get.getAvro
+  Schema.Bytes                 -> fmap Bytes   Get.getBytes
 
   Schema.NamedType tn          ->
     case HashMap.lookup tn env of
@@ -56,7 +56,7 @@ getField env sch = case sch of
       Nothing -> fail $ "Decoded Avro tag is outside the expected range for a Union. Tag: " <> show i <> " union of: " <> show (V.map Schema.typeName opts)
       Just t  -> Union (fromIntegral i) <$> getField env t
 
-  Schema.Fixed _ _ size -> Fixed <$> Get.getByteString (fromIntegral size)
+  Schema.Fixed _ _ size -> Fixed <$> getByteString (fromIntegral size)
 
   Schema.Array t -> do
     vals <- getBlocksOf env t

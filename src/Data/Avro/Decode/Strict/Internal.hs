@@ -12,6 +12,7 @@ import qualified Codec.Compression.Zlib     as Z
 import           Control.Monad              (replicateM, when)
 import qualified Data.Aeson                 as A
 import qualified Data.Array                 as Array
+import           Data.Avro.Internal.Get
 import           Data.Binary.Get            (Get, runGetOrFail)
 import qualified Data.Binary.Get            as G
 import           Data.Binary.IEEE754        as IEEE

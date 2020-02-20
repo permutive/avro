@@ -33,6 +33,7 @@ module Data.Avro.Decode.Lazy
 import           Control.Monad              (foldM, replicateM, when)
 import qualified Data.Aeson                 as A
 import qualified Data.Array                 as Array
+import           Data.Avro.Internal.Get
 import           Data.Binary.Get            (Get, runGetOrFail)
 import qualified Data.Binary.Get            as G
 import           Data.Binary.IEEE754        as IEEE
@@ -68,9 +69,9 @@ import qualified Data.Avro.Decode.Strict.Internal as DecodeStrict
 
 import Data.Avro.Decode.Get
 import Data.Avro.Decode.Lazy.Convert      (fromStrictValue, toStrictValue)
-import Data.Avro.Schema.Deconflict
 import Data.Avro.Decode.Lazy.FromLazyAvro
 import Data.Avro.FromAvro
+import Data.Avro.Schema.Deconflict
 
 -- | Decodes the container as a lazy list of values of the requested type.
 --
@@ -347,9 +348,9 @@ getAvroOf ty0 bs = go ty0 bs
   getField :: Field -> BL.ByteString -> (BL.ByteString, Maybe (Text, T.LazyValue Schema))
   getField Field{..} bs =
     case (fldStatus, fldDefault) of
-      (AsIs _, _)          -> Just . (fldName,) <$> go fldType bs
-      (Defaulted, Just v)  -> (bs, Just (fldName, fromStrictValue v))
-      (Ignored, _)         -> (fst (go fldType bs), Nothing)
+      (AsIs _, _)         -> Just . (fldName,) <$> go fldType bs
+      (Defaulted, Just v) -> (bs, Just (fldName, fromStrictValue v))
+      (Ignored, _)        -> (fst (go fldType bs), Nothing)
 {-# INLINABLE getAvroOf #-}
 
 getKVPair getElement bs =
